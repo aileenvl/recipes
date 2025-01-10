@@ -4,13 +4,15 @@ import vercel from '@astrojs/vercel/serverless';
 import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 
-// Choose adapter based on environment
-const adapter = process.env.VERCEL ? vercel() : node({
-  mode: 'standalone'
-});
-
 export default defineConfig({
   output: 'server',
-  adapter,
+  adapter: vercel({
+    analytics: true,
+    webAnalytics: {
+      enabled: true,
+    },
+    functionPerRoute: false,
+    edgeMiddleware: false,
+  }),
   integrations: [react(), tailwind()]
 });
