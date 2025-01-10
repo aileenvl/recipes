@@ -4,23 +4,28 @@ import SearchBar from '../components/SearchBar';
 import RecipeCard from '../components/RecipeCard.astro';
 import { OramaClient } from '@oramacloud/client'
 
-const client = new OramaClient({
-  endpoint: import.meta.env.PUBLIC_ORAMA_ENDPOINT,
-  api_key: import.meta.env.PUBLIC_ORAMA_API_KEY
-});
-
+let recipes = [];
+let totalPages = 0;
 const ITEMS_PER_PAGE = 12;
-const currentPage = 1;
 
-const initialResults = await client.search({
-  term: '',
-  mode: 'fulltext',
-  limit: ITEMS_PER_PAGE,
-  offset: (currentPage - 1) * ITEMS_PER_PAGE
-});
+try {
+  const client = new OramaClient({
+    endpoint: import.meta.env.PUBLIC_ORAMA_ENDPOINT,
+    api_key: import.meta.env.PUBLIC_ORAMA_API_KEY
+  });
 
-let recipes = initialResults.hits;
-const totalPages = Math.ceil(initialResults.count / ITEMS_PER_PAGE);
+  const initialResults = await client.search({
+    term: '',
+    mode: 'fulltext',
+    limit: ITEMS_PER_PAGE,
+    offset: 0
+  });
+
+  recipes = initialResults.hits;
+  totalPages = Math.ceil(initialResults.count / ITEMS_PER_PAGE);
+} catch (error) {
+  console.error('Failed to fetch initial recipes:', error);
+}
 ---
 
 <Layout title="Recipe Finder">
@@ -32,18 +37,29 @@ const totalPages = Math.ceil(initialResults.count / ITEMS_PER_PAGE);
     </div>
 
     <div id="recipes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-      {recipes.map(recipe => <RecipeCard recipe={recipe.document} />)}
+      {recipes.length > 0 ? (
+        recipes.map(recipe => <RecipeCard recipe={recipe.document} />)
+      ) : (
+        <p class="col-span-full text-center text-gray-500">Loading recipes...</p>
+      )}
     </div>
 
-    <!-- Add pagination controls -->
     <div id="pagination" class="flex justify-center items-center gap-2">
-      <button id="prev-page" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50" disabled>
+      <button 
+        id="prev-page" 
+        class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50" 
+        disabled
+      >
         Previous
       </button>
       <span id="page-info" class="text-gray-600">
         Page <span id="current-page">1</span> of <span id="total-pages">{totalPages}</span>
       </span>
-      <button id="next-page" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50">
+      <button 
+        id="next-page" 
+        class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50"
+        disabled={totalPages <= 1}
+      >
         Next
       </button>
     </div>
