@@ -14,6 +14,7 @@
     "@astrojs/node": "^8.3.4",
     "@astrojs/react": "^3.6.3",
     "@astrojs/tailwind": "^5.1.0",
+    "@astrojs/vercel": "^8.0.1",
     "@orama/orama": "^2.0.0-beta.11",
     "@oramacloud/client": "^2.1.4",
     "astro": "^4.15.3",
