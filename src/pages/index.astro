@@ -1,32 +1,7 @@
 ---
-
 import Layout from '../layouts/Layout.astro';
 import SearchBar from '../components/SearchBar';
 import RecipeCard from '../components/RecipeCard.astro';
-import { OramaClient } from '@oramacloud/client'
-
-let recipes = [];
-let totalPages = 0;
-const ITEMS_PER_PAGE = 12;
-
-try {
-  const client = new OramaClient({
-    endpoint: import.meta.env.PUBLIC_ORAMA_ENDPOINT,
-    api_key: import.meta.env.PUBLIC_ORAMA_API_KEY
-  });
-
-  const initialResults = await client.search({
-    term: '',
-    mode: 'fulltext',
-    limit: ITEMS_PER_PAGE,
-    offset: 0
-  });
-
-  recipes = initialResults.hits;
-  totalPages = Math.ceil(initialResults.count / ITEMS_PER_PAGE);
-} catch (error) {
-  console.error('Failed to fetch initial recipes:', error);
-}
 ---
 
 <Layout title="Recipe Finder">
@@ -38,29 +13,17 @@ try {
     </div>
 
     <div id="recipes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-      {recipes.length > 0 ? (
-        recipes.map(recipe => <RecipeCard recipe={recipe.document} />)
-      ) : (
-        <p class="col-span-full text-center text-gray-500">Loading recipes...</p>
-      )}
+      <p class="col-span-full text-center text-gray-500">Loading recipes...</p>
     </div>
 
     <div id="pagination" class="flex justify-center items-center gap-2">
-      <button 
-        id="prev-page" 
-        class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50" 
-        disabled
-      >
+      <button id="prev-page" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50" disabled>
         Previous
       </button>
       <span id="page-info" class="text-gray-600">
-        Page <span id="current-page">1</span> of <span id="total-pages">{totalPages}</span>
+        Page <span id="current-page">1</span> of <span id="total-pages">1</span>
       </span>
-      <button 
-        id="next-page" 
-        class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50"
-        disabled={totalPages <= 1}
-      >
+      <button id="next-page" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50">
         Next
       </button>
     </div>
@@ -75,22 +38,8 @@ try {
   let currentSearchTerm = '';
   const ITEMS_PER_PAGE = 12;
 
-  async function init() {
-    try {
-      await performSearch();
-      document.getElementById('pagination')?.classList.remove('hidden');
-    } catch (error) {
-      console.error('Initialization error:', error);
-      const recipesGrid = document.getElementById('recipes-grid');
-      if (recipesGrid) {
-        recipesGrid.innerHTML = '<p class="col-span-full text-center text-red-500">Error loading recipes. Please try again later.</p>';
-      }
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', init);
-
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
+    await performSearch();
 
     window.addEventListener('search', async (e) => {
       currentSearchTerm = e.detail;
@@ -131,14 +80,15 @@ try {
       });
 
       totalPages = Math.ceil(searchResults.count / ITEMS_PER_PAGE);
-
       updateUI(searchResults);
     } catch (error) {
       console.error('Search error:', error);
+      const recipesGrid = document.getElementById('recipes-grid');
+      if (recipesGrid) {
+        recipesGrid.innerHTML = '<p class="col-span-full text-center text-red-500">Error loading recipes. Please try again later.</p>';
+      }
     }
   }
-
-  performSearch();
 
   function updateUI(searchResults) {
     const recipesGrid = document.getElementById('recipes-grid');
@@ -174,7 +124,7 @@ try {
                 <span>👥 Serves ${hit.document.servings}</span>
                 <span>🔥 ${Math.round(hit.document.nutrition.calories)} cal</span>
               </div>
-              <a
+              
                 href="/recipe/${hit.document.id}?name=${encodeURIComponent(hit.document.name)}"
                 class="mt-4 inline-block px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
               >
