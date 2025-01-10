@@ -1,5 +1,4 @@
 import { defineConfig } from 'astro/config';
-import node from '@astrojs/node';
 import vercel from '@astrojs/vercel/serverless';
 import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
@@ -11,8 +10,9 @@ export default defineConfig({
     webAnalytics: {
       enabled: true,
     },
-    functionPerRoute: false,
-    edgeMiddleware: false,
+    functionPerRoute: true,
+    includeFiles: ['./dist/**/*'],
+    devMode: process.env.NODE_ENV === 'development'
   }),
   integrations: [react(), tailwind()]
 });
