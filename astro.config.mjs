@@ -5,7 +5,12 @@ import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 
 // Choose adapter based on environment
-const adapter = process.env.VERCEL ? vercel() : node({
+const adapter = process.env.VERCEL ? vercel({
+  analytics: true,
+  webAnalytics: true,
+  speedInsights: true,
+  imageService: true,
+}) : node({
   mode: 'standalone'
 });
 
