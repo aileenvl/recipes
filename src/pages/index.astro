@@ -70,7 +70,6 @@ import RecipeCard from '../components/RecipeCard.astro';
       const endpoint = import.meta.env.PUBLIC_ORAMA_ENDPOINT?.trim();
       const apiKey = import.meta.env.PUBLIC_ORAMA_API_KEY?.trim();
       
-      console.log('Searching with endpoint:', endpoint);
       
       const client = new OramaClient({
         endpoint,
@@ -84,7 +83,6 @@ import RecipeCard from '../components/RecipeCard.astro';
         offset: (currentPage - 1) * ITEMS_PER_PAGE
       });
 
-      console.log('Search results:', searchResults);
       totalPages = Math.ceil(searchResults.count / ITEMS_PER_PAGE);
       updateUI(searchResults);
     } catch (error) {
