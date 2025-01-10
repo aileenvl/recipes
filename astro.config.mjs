@@ -10,7 +10,8 @@ const adapter = process.env.VERCEL ? vercel({
   webAnalytics: true,
   speedInsights: true,
   imageService: true,
-  devMode: true,
+  includeFiles: ['./dist/**/*'],
+  functionPerRoute: true,
 }) : node({
   mode: 'standalone'
 });
@@ -18,5 +19,8 @@ const adapter = process.env.VERCEL ? vercel({
 export default defineConfig({
   output: 'server',
   adapter,
-  integrations: [react(), tailwind()]
+  integrations: [react(), tailwind()],
+  build: {
+    serverEntry: 'index.js'
+  }
 });
