@@ -4,7 +4,9 @@ import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 
 export default defineConfig({
-  output: 'hybrid',
-  adapter: vercel(),
+  output: 'server',
+  adapter: vercel({
+    maxDuration: 60
+  }),
   integrations: [react(), tailwind()]
 });

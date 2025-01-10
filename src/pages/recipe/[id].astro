@@ -7,6 +7,14 @@ export const prerender = false;
 const { id } = Astro.params;
 const name = Astro.url.searchParams.get('name');
 console.log('Requested ID:', id, 'Name:', name);
+// Debug logging
+console.log('Recipe Page Access:', {
+  id,
+  name,
+  endpoint: import.meta.env.PUBLIC_ORAMA_ENDPOINT,
+  hasApiKey: !!import.meta.env.PUBLIC_ORAMA_API_KEY,
+  fullUrl: Astro.request.url
+});
 
 let recipe;
 
@@ -25,11 +33,11 @@ try {
   recipe = results.hits[0]?.document;
   
   if (!recipe) {
-    return Astro.redirect('/404');  // Changed from Response to Astro.redirect
+    return Astro.redirect('/404');
   }
 } catch (error) {
   console.error('Error:', error);
-  return Astro.redirect('/404');  // Changed from Response to Astro.redirect
+  return Astro.redirect('/404');
 }
 ---
 
