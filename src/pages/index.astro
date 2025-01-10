@@ -67,9 +67,14 @@ import RecipeCard from '../components/RecipeCard.astro';
 
   async function performSearch() {
     try {
+      const endpoint = import.meta.env.PUBLIC_ORAMA_ENDPOINT?.trim();
+      const apiKey = import.meta.env.PUBLIC_ORAMA_API_KEY?.trim();
+      
+      console.log('Searching with endpoint:', endpoint);
+      
       const client = new OramaClient({
-        endpoint: import.meta.env.PUBLIC_ORAMA_ENDPOINT,
-        api_key: import.meta.env.PUBLIC_ORAMA_API_KEY
+        endpoint,
+        api_key: apiKey
       });
 
       const searchResults = await client.search({
@@ -79,6 +84,7 @@ import RecipeCard from '../components/RecipeCard.astro';
         offset: (currentPage - 1) * ITEMS_PER_PAGE
       });
 
+      console.log('Search results:', searchResults);
       totalPages = Math.ceil(searchResults.count / ITEMS_PER_PAGE);
       updateUI(searchResults);
     } catch (error) {
@@ -125,7 +131,7 @@ import RecipeCard from '../components/RecipeCard.astro';
                 <span>🔥 ${Math.round(hit.document.nutrition.calories)} cal</span>
               </div>
               
-                href="/recipe/${hit.document.id}?name=${encodeURIComponent(hit.document.name)}"
+              <a href="/recipe/${hit.document.id}?name=${encodeURIComponent(hit.document.name)}"
                 class="mt-4 inline-block px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
               >
                 View Recipe
