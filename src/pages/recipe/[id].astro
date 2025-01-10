@@ -19,16 +19,17 @@ try {
   const results = await client.search({
     term: name || '',
     mode: 'fulltext',
+    limit: 1
   });
 
   recipe = results.hits[0]?.document;
   
   if (!recipe) {
-    return new Response('Recipe not found', { status: 404 });
+    return Astro.redirect('/404');  // Changed from Response to Astro.redirect
   }
 } catch (error) {
   console.error('Error:', error);
-  return new Response('Error fetching recipe', { status: 500 });
+  return Astro.redirect('/404');  // Changed from Response to Astro.redirect
 }
 ---
 
@@ -59,7 +60,7 @@ try {
       <div class="mb-8">
         <h2 class="text-2xl font-semibold mb-4">Ingredients</h2>
         <ul class="list-disc list-inside space-y-2">
-          {recipe.ingredients.parts.map(ingredient => (
+          {recipe.ingredients.parts.map((ingredient) => (
             <li>{ingredient}</li>
           ))}
         </ul>
@@ -68,7 +69,7 @@ try {
       <div>
         <h2 class="text-2xl font-semibold mb-4">Instructions</h2>
         <ol class="list-decimal list-inside space-y-4">
-          {recipe.instructions.map(step => (
+          {recipe.instructions.map((step) => (
             <li class="pl-2">{step}</li>
           ))}
         </ol>
