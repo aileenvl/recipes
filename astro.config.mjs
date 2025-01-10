@@ -8,11 +8,8 @@ export default defineConfig({
   adapter: vercel({
     analytics: true,
     webAnalytics: {
-      enabled: true,
-    },
-    functionPerRoute: true,
-    includeFiles: ['./dist/**/*'],
-    devMode: process.env.NODE_ENV === 'development'
+      enabled: true
+    }
   }),
   integrations: [react(), tailwind()]
 });
