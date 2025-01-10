@@ -1,0 +1,160 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SearchBar from '../components/SearchBar';
+import RecipeCard from '../components/RecipeCard.astro';
+import { OramaClient } from '@oramacloud/client'
+
+const client = new OramaClient({
+  endpoint: import.meta.env.PUBLIC_ORAMA_ENDPOINT,
+  api_key: import.meta.env.PUBLIC_ORAMA_API_KEY
+});
+
+const ITEMS_PER_PAGE = 12;
+const currentPage = 1;
+
+const initialResults = await client.search({
+  term: '',
+  mode: 'fulltext',
+  limit: ITEMS_PER_PAGE,
+  offset: (currentPage - 1) * ITEMS_PER_PAGE
+});
+
+let recipes = initialResults.hits;
+const totalPages = Math.ceil(initialResults.count / ITEMS_PER_PAGE);
+---
+
+<Layout title="Recipe Finder">
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold text-center mb-8 text-gradient">Recipe Finder</h1>
+    
+    <div class="flex justify-center mb-8">
+      <SearchBar client:load />
+    </div>
+
+    <div id="recipes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      {recipes.map(recipe => <RecipeCard recipe={recipe.document} />)}
+    </div>
+
+    <!-- Add pagination controls -->
+    <div id="pagination" class="flex justify-center items-center gap-2">
+      <button id="prev-page" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50" disabled>
+        Previous
+      </button>
+      <span id="page-info" class="text-gray-600">
+        Page <span id="current-page">1</span> of <span id="total-pages">{totalPages}</span>
+      </span>
+      <button id="next-page" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50">
+        Next
+      </button>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { OramaClient } from '@oramacloud/client';
+  
+  let currentPage = 1;
+  let totalPages = 1;
+  let currentSearchTerm = '';
+  const ITEMS_PER_PAGE = 12;
+
+  document.addEventListener('DOMContentLoaded', () => {
+
+    window.addEventListener('search', async (e) => {
+      currentSearchTerm = e.detail;
+      currentPage = 1;
+      await performSearch();
+    });
+
+    const prevButton = document.getElementById('prev-page');
+    const nextButton = document.getElementById('next-page');
+
+    prevButton?.addEventListener('click', async () => {
+      if (currentPage > 1) {
+        currentPage--;
+        await performSearch();
+      }
+    });
+
+    nextButton?.addEventListener('click', async () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        await performSearch();
+      }
+    });
+  });
+
+  async function performSearch() {
+    try {
+      const client = new OramaClient({
+        endpoint: import.meta.env.PUBLIC_ORAMA_ENDPOINT,
+        api_key: import.meta.env.PUBLIC_ORAMA_API_KEY
+      });
+
+      const searchResults = await client.search({
+        term: currentSearchTerm,
+        mode: 'fulltext',
+        limit: ITEMS_PER_PAGE,
+        offset: (currentPage - 1) * ITEMS_PER_PAGE
+      });
+
+      totalPages = Math.ceil(searchResults.count / ITEMS_PER_PAGE);
+
+      updateUI(searchResults);
+    } catch (error) {
+      console.error('Search error:', error);
+    }
+  }
+
+  performSearch();
+
+  function updateUI(searchResults) {
+    const recipesGrid = document.getElementById('recipes-grid');
+    const prevButton = document.getElementById('prev-page');
+    const nextButton = document.getElementById('next-page');
+    const currentPageSpan = document.getElementById('current-page');
+    const totalPagesSpan = document.getElementById('total-pages');
+
+    if (prevButton) prevButton.disabled = currentPage <= 1;
+    if (nextButton) nextButton.disabled = currentPage >= totalPages;
+    if (currentPageSpan) currentPageSpan.textContent = currentPage.toString();
+    if (totalPagesSpan) totalPagesSpan.textContent = totalPages.toString();
+
+    if (recipesGrid && searchResults.hits.length > 0) {
+      recipesGrid.innerHTML = '';
+      searchResults.hits.forEach(hit => {
+        const recipeCard = document.createElement('div');
+        recipeCard.innerHTML = `
+          <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="p-6">
+              <h3 class="text-xl font-semibold text-gray-900 mb-2">${hit.document.name}</h3>
+              
+              <div class="mb-2">
+                <span class="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
+                  ${hit.document.category}
+                </span>
+              </div>
+
+              <p class="text-gray-600 mb-4">${hit.document.description}</p>
+
+              <div class="flex flex-wrap gap-4 text-sm text-gray-500">
+                <span>🕒 ${hit.document.timing.totalTime} mins</span>
+                <span>👥 Serves ${hit.document.servings}</span>
+                <span>🔥 ${Math.round(hit.document.nutrition.calories)} cal</span>
+              </div>
+              <a
+                href="/recipe/${hit.document.id}?name=${encodeURIComponent(hit.document.name)}"
+                class="mt-4 inline-block px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+              >
+                View Recipe
+              </a>
+            </div>
+          </div>
+        `;
+        recipesGrid.appendChild(recipeCard);
+      });
+    } else if (recipesGrid) {
+      recipesGrid.innerHTML = '<p class="col-span-full text-center text-gray-500">No recipes found</p>';
+    }
+  }
+</script>
