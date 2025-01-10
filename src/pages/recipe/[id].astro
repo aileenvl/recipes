@@ -2,6 +2,8 @@
 import Layout from '../../layouts/Layout.astro';
 import { OramaClient } from '@oramacloud/client'
 
+export const prerender = false;
+
 const { id } = Astro.params;
 const name = Astro.url.searchParams.get('name');
 console.log('Requested ID:', id, 'Name:', name);
@@ -17,10 +19,10 @@ try {
   const results = await client.search({
     term: name || '',
     mode: 'fulltext',
-  })
+  });
 
   recipe = results.hits[0]?.document;
-
+  
   if (!recipe) {
     return new Response('Recipe not found', { status: 404 });
   }
