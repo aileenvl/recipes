@@ -1,26 +1,16 @@
 import { defineConfig } from 'astro/config';
 import node from '@astrojs/node';
-import vercel from '@astrojs/vercel/serverless';
+import vercel from '@astrojs/vercel/edge';
 import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 
 // Choose adapter based on environment
-const adapter = process.env.VERCEL ? vercel({
-  analytics: true,
-  webAnalytics: true,
-  speedInsights: true,
-  imageService: true,
-  includeFiles: ['./dist/**/*'],
-  functionPerRoute: true,
-}) : node({
+const adapter = process.env.VERCEL ? vercel() : node({
   mode: 'standalone'
 });
 
 export default defineConfig({
   output: 'server',
   adapter,
-  integrations: [react(), tailwind()],
-  build: {
-    serverEntry: 'index.js'
-  }
+  integrations: [react(), tailwind()]
 });
