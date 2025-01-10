@@ -2,7 +2,13 @@
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/api/entry.js"
+      "destination": "/"
     }
-  ]
+  ],
+  "functions": {
+    "api/entry.js": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  }
 }
