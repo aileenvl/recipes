@@ -8,12 +8,21 @@ const { id } = Astro.params;
 const name = Astro.url.searchParams.get('name');
 console.log('Debug - Route Params:', { id, name, url: Astro.url.pathname });
 
+// Ensure both id and name are required
+if (!id || !name) {
+  return new Response('Missing required parameters', {
+    status: 400,
+  });
+}
+
 let recipe;
 try {
   const endpoint = import.meta.env.PUBLIC_ORAMA_ENDPOINT?.trim();
   const apiKey = import.meta.env.PUBLIC_ORAMA_API_KEY?.trim();
   
-  console.log('Debug - Endpoint:', endpoint);
+  if (!endpoint || !apiKey) {
+    throw new Error('Missing Orama configuration');
+  }
   
   const client = new OramaClient({
     endpoint,
@@ -21,15 +30,15 @@ try {
   });
 
   const results = await client.search({
-    term: name || '',
+    term: name,
     mode: 'fulltext',
-    limit: 1
+    limit: 1,
   });
 
   recipe = results.hits[0]?.document;
   
-  if (!recipe) {
-    console.log('Debug - No recipe found');
+  if (!recipe || recipe.id !== id) {  // Verify the ID matches
+    console.log('Debug - No matching recipe found');
     return new Response('Recipe not found', {
       status: 404,
     });

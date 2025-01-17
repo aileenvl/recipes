@@ -5,6 +5,13 @@ import tailwind from '@astrojs/tailwind';
 
 export default defineConfig({
   output: 'hybrid',
-  adapter: vercel(),
+  adapter: vercel({
+    webAnalytics: {
+      enabled: true,
+    },
+    speedInsights: {
+      enabled: true,
+    },
+  }),
   integrations: [react(), tailwind()]
 });
