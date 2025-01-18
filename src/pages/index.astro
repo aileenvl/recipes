@@ -129,7 +129,7 @@ import RecipeCard from '../components/RecipeCard.astro';
                 <span>🔥 ${Math.round(hit.document.nutrition.calories)} cal</span>
               </div>
               
-              <a href="/recipe/${hit.document.id}?name=${encodeURIComponent(hit.document.name)}"
+              <a href="/recipe/${encodeURIComponent(hit.document.id)}?name=${encodeURIComponent(hit.document.name)}"
                 class="mt-4 inline-block px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
               >
                 View Recipe

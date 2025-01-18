@@ -6,7 +6,6 @@ export const prerender = false;
 
 const { id } = Astro.params;
 const name = Astro.url.searchParams.get('name');
-console.log('Debug - Route Params:', { id, name, url: Astro.url.pathname });
 
 // Ensure both id and name are required
 if (!id || !name) {
@@ -29,28 +28,40 @@ try {
     api_key: apiKey
   });
 
-  const results = await client.search({
-    term: name,
+  // Try to find the recipe by ID first
+  const idResults = await client.search({
+    term: id,
     mode: 'fulltext',
     limit: 1,
+    exact: true,
+    where: {
+      id: id
+    }
   });
 
-  recipe = results.hits[0]?.document;
+  if (idResults.hits.length > 0) {
+    recipe = idResults.hits[0].document;
+  } else {
+    // Fallback to searching by name if ID search fails
+    const nameResults = await client.search({
+      term: name,
+      mode: 'fulltext',
+      limit: 10
+    });
+
+    recipe = nameResults.hits.find(hit => hit.document.id === id)?.document;
+  }
   
-  if (!recipe || recipe.id !== id) {  // Verify the ID matches
-    console.log('Debug - No matching recipe found');
+  if (!recipe) {
     return new Response('Recipe not found', {
       status: 404,
     });
   }
 } catch (error) {
-  console.error('Debug - Error:', error);
   return new Response('Error fetching recipe', {
     status: 500,
   });
 }
-
-console.log('Debug - Recipe found:', recipe?.id);
 ---
 
 <Layout title={recipe.name}>
