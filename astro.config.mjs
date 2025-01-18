@@ -9,9 +9,13 @@ export default defineConfig({
     webAnalytics: {
       enabled: true,
     },
-    speedInsights: {
-      enabled: true,
-    },
+    functionPerRoute: true,
+    routes: [
+      {
+        src: '/recipe/[id]',
+        dest: '/recipe/[id].astro'
+      }
+    ]
   }),
   integrations: [react(), tailwind()]
 });

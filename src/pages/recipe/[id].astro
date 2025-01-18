@@ -2,16 +2,14 @@
 import Layout from '../../layouts/Layout.astro';
 import { OramaClient } from '@oramacloud/client'
 
-export const prerender = false;
+// Don't set prerender to false, let hybrid mode handle it
+// export const prerender = false;
 
 const { id } = Astro.params;
 const name = Astro.url.searchParams.get('name');
 
-// Ensure both id and name are required
 if (!id || !name) {
-  return new Response('Missing required parameters', {
-    status: 400,
-  });
+  return Astro.redirect('/', 302);
 }
 
 let recipe;
@@ -28,39 +26,35 @@ try {
     api_key: apiKey
   });
 
-  // Try to find the recipe by ID first
-  const idResults = await client.search({
-    term: id,
+  // Search with both ID and name to be more precise
+  const searchResults = await client.search({
+    term: name,
     mode: 'fulltext',
-    limit: 1,
-    exact: true,
-    where: {
-      id: id
-    }
+    limit: 10
   });
 
-  if (idResults.hits.length > 0) {
-    recipe = idResults.hits[0].document;
-  } else {
-    // Fallback to searching by name if ID search fails
-    const nameResults = await client.search({
-      term: name,
-      mode: 'fulltext',
-      limit: 10
-    });
-
-    recipe = nameResults.hits.find(hit => hit.document.id === id)?.document;
-  }
+  recipe = searchResults.hits.find(hit => hit.document.id === id)?.document;
   
   if (!recipe) {
-    return new Response('Recipe not found', {
-      status: 404,
+    // Try one more time with just the ID
+    const idResults = await client.search({
+      term: id,
+      limit: 1,
+      where: {
+        id: id
+      }
     });
+    
+    recipe = idResults.hits[0]?.document;
+    
+    if (!recipe) {
+      return Astro.redirect('/', 302);
+    }
   }
+
 } catch (error) {
-  return new Response('Error fetching recipe', {
-    status: 500,
-  });
+  console.error('Error fetching recipe:', error);
+  return Astro.redirect('/', 302);
 }
 ---
 
