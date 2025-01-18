@@ -2,9 +2,17 @@
 import Layout from '../../layouts/Layout.astro';
 import { OramaClient } from '@oramacloud/client'
 
-// For hybrid mode, we need to explicitly mark this route as non-prerendered
-export const prerender = false;
+// Instead of prerender = false, we'll use getStaticPaths with fallback
+export async function getStaticPaths() {
+  // Return an empty array to tell Astro this is a dynamic route
+  // that should be generated on demand
+  return {
+    paths: [],
+    fallback: true // Enable on-demand generation
+  };
+}
 
+// This will run on the server for any non-prerendered paths
 const { id } = Astro.params;
 const name = Astro.url.searchParams.get('name');
 
@@ -26,30 +34,30 @@ try {
     api_key: apiKey
   });
 
-  // Search with both ID and name to be more precise
+  // Simplified search to be more reliable
   const searchResults = await client.search({
-    term: name,
-    mode: 'fulltext',
-    limit: 10
+    term: id,
+    limit: 1,
+    where: {
+      id: id
+    }
   });
 
-  recipe = searchResults.hits.find(hit => hit.document.id === id)?.document;
+  recipe = searchResults.hits[0]?.document;
   
   if (!recipe) {
-    // Try one more time with just the ID
-    const idResults = await client.search({
-      term: id,
-      limit: 1,
-      where: {
-        id: id
-      }
+    // If no recipe found by ID, try searching by name
+    const nameResults = await client.search({
+      term: name,
+      mode: 'fulltext',
+      limit: 10
     });
     
-    recipe = idResults.hits[0]?.document;
-    
-    if (!recipe) {
-      return Astro.redirect('/', 302);
-    }
+    recipe = nameResults.hits.find(hit => hit.document.id === id)?.document;
+  }
+
+  if (!recipe) {
+    return Astro.redirect('/', 302);
   }
 
 } catch (error) {
@@ -59,46 +67,54 @@ try {
 ---
 
 <Layout title={recipe.name}>
-  <main class="container mx-auto px-4 py-8">
-    <div class="max-w-3xl mx-auto mb-6">
-      <a href="/" class="inline-flex items-center text-purple-600 hover:text-purple-700">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
-        </svg>
-        Back to Home
-      </a>
+  <!-- Add a loading state that will show while the page is being generated -->
+  {!recipe ? (
+    <div class="flex items-center justify-center min-h-screen">
+      <p class="text-xl text-gray-600">Loading recipe...</p>
     </div>
+  ) : (
+    <!-- Rest of your existing template -->
+    <main class="container mx-auto px-4 py-8">
+      <div class="max-w-3xl mx-auto mb-6">
+        <a href="/" class="inline-flex items-center text-purple-600 hover:text-purple-700">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+          </svg>
+          Back to Home
+        </a>
+      </div>
 
-    <article class="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-8">
-      <h1 class="text-4xl font-bold mb-4">{recipe.name}</h1>
-      <p class="text-gray-600 mb-6">{recipe.description}</p>
+      <article class="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-8">
+        <h1 class="text-4xl font-bold mb-4">{recipe.name}</h1>
+        <p class="text-gray-600 mb-6">{recipe.description}</p>
 
-      <div class="flex gap-4 mb-6">
-        <div class="bg-purple-100 px-4 py-2 rounded-md">
-          <span class="font-semibold">🕒 Cooking Time:</span> {recipe.timing.totalTime} minutes
+        <div class="flex gap-4 mb-6">
+          <div class="bg-purple-100 px-4 py-2 rounded-md">
+            <span class="font-semibold">🕒 Cooking Time:</span> {recipe.timing.totalTime} minutes
+          </div>
+          <div class="bg-purple-100 px-4 py-2 rounded-md">
+            <span class="font-semibold">👥 Servings:</span> {recipe.servings}
+          </div>
         </div>
-        <div class="bg-purple-100 px-4 py-2 rounded-md">
-          <span class="font-semibold">👥 Servings:</span> {recipe.servings}
+
+        <div class="mb-8">
+          <h2 class="text-2xl font-semibold mb-4">Ingredients</h2>
+          <ul class="list-disc list-inside space-y-2">
+            {recipe.ingredients.parts.map((ingredient) => (
+              <li>{ingredient}</li>
+            ))}
+          </ul>
         </div>
-      </div>
 
-      <div class="mb-8">
-        <h2 class="text-2xl font-semibold mb-4">Ingredients</h2>
-        <ul class="list-disc list-inside space-y-2">
-          {recipe.ingredients.parts.map((ingredient) => (
-            <li>{ingredient}</li>
-          ))}
-        </ul>
-      </div>
-
-      <div>
-        <h2 class="text-2xl font-semibold mb-4">Instructions</h2>
-        <ol class="list-decimal list-inside space-y-4">
-          {recipe.instructions.map((step) => (
-            <li class="pl-2">{step}</li>
-          ))}
-        </ol>
-      </div>
-    </article>
-  </main>
+        <div>
+          <h2 class="text-2xl font-semibold mb-4">Instructions</h2>
+          <ol class="list-decimal list-inside space-y-4">
+            {recipe.instructions.map((step) => (
+              <li class="pl-2">{step}</li>
+            ))}
+          </ol>
+        </div>
+      </article>
+    </main>
+  )}
 </Layout>
