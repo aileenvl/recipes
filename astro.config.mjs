@@ -8,7 +8,16 @@ export default defineConfig({
   adapter: vercel({
     webAnalytics: {
       enabled: true,
-    }
+    },
+    routes: [
+      { 
+        src: '/recipe/(?<id>[^/]+)', 
+        dest: '/recipe/[id]'
+      }
+    ],
+    functionPerRoute: true,
+    includeFiles: ['**/*'],
+    maxDuration: 60
   }),
   integrations: [react(), tailwind()]
 });
