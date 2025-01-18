@@ -42,9 +42,8 @@ function formatDuration(duration: string) {
       <span>👥 Serves {recipe.servings}</span>
       <span>🔥 {Math.round(recipe.nutrition.calories)} cal</span>
     </div>
-    <a
-      href={`/recipe/${recipe.id}?name=${encodeURIComponent(recipe.name)}`}
-      class="mt-4 inline-block px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+  <a href="/recipe?id=${encodeURIComponent(hit.document.id)}&name=${encodeURIComponent(hit.document.name)}"
+   class="mt-4 inline-block px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
     >
       View Recipe
     </a>

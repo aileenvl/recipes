@@ -9,53 +9,65 @@ const RecipeDetail = () => {
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
-        const pathParts = window.location.pathname.split('/');
-        const id = pathParts[pathParts.length - 1];
-        const urlParams = new URLSearchParams(window.location.search);
-        const name = urlParams.get('name');
-  
+        console.log('Starting recipe fetch...');
+        
+        // Get parameters from query string only
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+        const name = params.get('name');
+
+        console.log('Parsed parameters:', { 
+          id, 
+          name,
+          search: window.location.search
+        });
+
         if (!id || !name) {
-          console.error('Missing recipe parameters');
+          console.log('Missing id or name, redirecting to home');
           window.location.href = '/';
           return;
         }
-  
+
         const endpoint = import.meta.env.PUBLIC_ORAMA_ENDPOINT?.trim();
         const apiKey = import.meta.env.PUBLIC_ORAMA_API_KEY?.trim();
-  
-        if (!endpoint || !apiKey) {
-          console.error('Missing API configuration');
-          return;
-        }
-  
+        
+        console.log('Orama config:', { 
+          endpoint: endpoint ? 'exists' : 'missing',
+          apiKey: apiKey ? 'exists' : 'missing'
+        });
+
         const client = new OramaClient({
           endpoint,
           api_key: apiKey
         });
-  
+
+        console.log('Searching for recipe:', name);
         const searchResults = await client.search({
           term: name,
           mode: 'fulltext',
           limit: 10
         });
-  
+
+        console.log('Search results:', searchResults);
+
         const foundRecipe = searchResults.hits.find(hit => hit.document.id === id)?.document;
-  
+        console.log('Found recipe:', foundRecipe ? 'yes' : 'no');
+
         if (!foundRecipe) {
-          console.error('Recipe not found');
+          console.log('Recipe not found, redirecting to home');
           window.location.href = '/';
           return;
         }
-  
+
         setRecipe(foundRecipe);
       } catch (error) {
         console.error('Error fetching recipe:', error);
-        setError(error.message);
+        window.location.href = '/';
       } finally {
         setLoading(false);
       }
     };
-  
+
     fetchRecipe();
   }, []);
 
