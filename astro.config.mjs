@@ -10,12 +10,14 @@ export default defineConfig({
       enabled: true
     },
     maxDuration: 8,
-    isr: {
-      enabled: false
-    }
+    devImageService: 'sharp',
+    // Add specific route handling
+    routes: [
+      {
+        src: '/recipe/:id',
+        dest: '/recipe/[id]'
+      }
+    ]
   }),
-  integrations: [
-    react(),
-    tailwind()
-  ]
+  integrations: [react(), tailwind()]
 });

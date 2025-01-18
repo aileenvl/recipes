@@ -9,49 +9,53 @@ const RecipeDetail = () => {
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
-        // Get ID from path and name from search params
         const pathParts = window.location.pathname.split('/');
         const id = pathParts[pathParts.length - 1];
         const urlParams = new URLSearchParams(window.location.search);
         const name = urlParams.get('name');
-
+  
         if (!id || !name) {
-          throw new Error('Missing recipe information');
+          console.error('Missing recipe parameters');
+          window.location.href = '/';
+          return;
         }
-
+  
         const endpoint = import.meta.env.PUBLIC_ORAMA_ENDPOINT?.trim();
         const apiKey = import.meta.env.PUBLIC_ORAMA_API_KEY?.trim();
-
+  
         if (!endpoint || !apiKey) {
-          throw new Error('Missing API configuration');
+          console.error('Missing API configuration');
+          return;
         }
-
+  
         const client = new OramaClient({
           endpoint,
           api_key: apiKey
         });
-
+  
         const searchResults = await client.search({
           term: name,
           mode: 'fulltext',
           limit: 10
         });
-
+  
         const foundRecipe = searchResults.hits.find(hit => hit.document.id === id)?.document;
-
+  
         if (!foundRecipe) {
-          throw new Error('Recipe not found');
+          console.error('Recipe not found');
+          window.location.href = '/';
+          return;
         }
-
+  
         setRecipe(foundRecipe);
-      } catch (err) {
-        console.error('Error:', err);
-        setError(err.message);
+      } catch (error) {
+        console.error('Error fetching recipe:', error);
+        setError(error.message);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchRecipe();
   }, []);
 

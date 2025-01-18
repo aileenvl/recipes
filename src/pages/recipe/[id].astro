@@ -2,14 +2,15 @@
 import Layout from '../../layouts/Layout.astro';
 import RecipeDetail from '../../components/RecipeDetail';
 
-// Remove getStaticPaths since we're using server output mode
-// Remove prerender flag since we're in server mode
-
 const { id } = Astro.params;
 const name = Astro.url.searchParams.get('name');
 
-if (!id || !name) {
-  return Astro.redirect('/', 302);
+// Add better error handling
+if (!id) {
+  return new Response(null, {
+    status: 404,
+    statusText: 'Not found'
+  });
 }
 ---
 
