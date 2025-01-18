@@ -10,17 +10,7 @@ export default defineConfig({
       enabled: true,
     },
     edge: false,
-    // Include specific error logging
-    functionPerRoute: true,
-    includeFiles: ['**/*.{js,json}'],
-    // Handle 404s explicitly
-    routes: [
-      {
-        src: '/recipe/:path*',
-        status: 404,
-        dest: '/404'
-      }
-    ]
+    functionPerRoute: true
   }),
   integrations: [react(), tailwind()]
 });
