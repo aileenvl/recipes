@@ -1,9 +1,0 @@
-{
-  "rewrites": [
-    { 
-      "source": "/recipe/:path*",
-      "destination": "/recipe/:path*"
-    }
-  ],
-  "cleanUrls": true
-}
