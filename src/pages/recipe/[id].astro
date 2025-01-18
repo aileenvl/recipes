@@ -2,17 +2,14 @@
 import Layout from '../../layouts/Layout.astro';
 import { OramaClient } from '@oramacloud/client'
 
-// Instead of prerender = false, we'll use getStaticPaths with fallback
+// Fix getStaticPaths to return the correct format
 export async function getStaticPaths() {
-  // Return an empty array to tell Astro this is a dynamic route
-  // that should be generated on demand
-  return {
-    paths: [],
-    fallback: true // Enable on-demand generation
-  };
+  return [
+    // Return empty array but in the correct format
+    // This tells Astro to handle all dynamic paths
+  ];
 }
 
-// This will run on the server for any non-prerendered paths
 const { id } = Astro.params;
 const name = Astro.url.searchParams.get('name');
 
@@ -67,13 +64,11 @@ try {
 ---
 
 <Layout title={recipe.name}>
-  <!-- Add a loading state that will show while the page is being generated -->
   {!recipe ? (
     <div class="flex items-center justify-center min-h-screen">
       <p class="text-xl text-gray-600">Loading recipe...</p>
     </div>
   ) : (
-    <!-- Rest of your existing template -->
     <main class="container mx-auto px-4 py-8">
       <div class="max-w-3xl mx-auto mb-6">
         <a href="/" class="inline-flex items-center text-purple-600 hover:text-purple-700">
