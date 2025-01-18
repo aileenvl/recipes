@@ -4,20 +4,7 @@ import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 
 export default defineConfig({
-  output: 'server',
-  adapter: vercel({
-    webAnalytics: {
-      enabled: true
-    },
-    maxDuration: 8,
-    devImageService: 'sharp',
-    // Add specific route handling
-    routes: [
-      {
-        src: '/recipe/:id',
-        dest: '/recipe/[id]'
-      }
-    ]
-  }),
+  output: 'hybrid',  // Use hybrid mode
+  adapter: vercel(), // Keep it simple
   integrations: [react(), tailwind()]
 });
