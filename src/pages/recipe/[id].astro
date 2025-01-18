@@ -2,26 +2,24 @@
 import Layout from '../../layouts/Layout.astro';
 import RecipeDetail from '../../components/RecipeDetail';
 
+// Enable SSR
 export const prerender = false;
 
-// This is necessary for dynamic routes in hybrid mode
+// Required for dynamic routes
 export function getStaticPaths() {
-  return [
-    // We provide a default path but the actual paths will be handled client-side
-    { params: { id: undefined } }
-  ];
+  return [{ params: { id: 'default' } }];
 }
 
-// Get the params just to validate we have them
+// Get params
 const { id } = Astro.params;
 const name = Astro.url.searchParams.get('name');
 
-// Validate we have both parameters
+// Validate params
 if (!id || !name) {
   return Astro.redirect('/', 302);
 }
 ---
 
 <Layout title="Recipe">
-  <RecipeDetail client:load />
+  <RecipeDetail client:only="react" />
 </Layout>
