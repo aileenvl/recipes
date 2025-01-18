@@ -1,8 +1,5 @@
 {
   "rewrites": [
-    { 
-      "source": "/recipe/:id",
-      "destination": "/recipe/[id]" 
-    }
+    { "source": "/(.*)", "destination": "/" }
   ]
 }

@@ -2,19 +2,12 @@
 import Layout from '../../layouts/Layout.astro';
 import RecipeDetail from '../../components/RecipeDetail';
 
-// Enable SSR
-export const prerender = false;
+// Remove getStaticPaths since we're using server output mode
+// Remove prerender flag since we're in server mode
 
-// Required for dynamic routes
-export function getStaticPaths() {
-  return [{ params: { id: 'default' } }];
-}
-
-// Get params
 const { id } = Astro.params;
 const name = Astro.url.searchParams.get('name');
 
-// Validate params
 if (!id || !name) {
   return Astro.redirect('/', 302);
 }
