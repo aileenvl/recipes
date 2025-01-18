@@ -4,21 +4,27 @@ import { OramaClient } from '@oramacloud/client';
 const RecipeDetail = () => {
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
+        // Get ID from path and name from search params
+        const pathParts = window.location.pathname.split('/');
+        const id = pathParts[pathParts.length - 1];
         const urlParams = new URLSearchParams(window.location.search);
         const name = urlParams.get('name');
-        const id = window.location.pathname.split('/').pop();
 
         if (!id || !name) {
-          window.location.href = '/';
-          return;
+          throw new Error('Missing recipe information');
         }
 
         const endpoint = import.meta.env.PUBLIC_ORAMA_ENDPOINT?.trim();
         const apiKey = import.meta.env.PUBLIC_ORAMA_API_KEY?.trim();
+
+        if (!endpoint || !apiKey) {
+          throw new Error('Missing API configuration');
+        }
 
         const client = new OramaClient({
           endpoint,
@@ -34,14 +40,13 @@ const RecipeDetail = () => {
         const foundRecipe = searchResults.hits.find(hit => hit.document.id === id)?.document;
 
         if (!foundRecipe) {
-          window.location.href = '/';
-          return;
+          throw new Error('Recipe not found');
         }
 
         setRecipe(foundRecipe);
-      } catch (error) {
-        console.error('Error:', error);
-        window.location.href = '/';
+      } catch (err) {
+        console.error('Error:', err);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -54,6 +59,17 @@ const RecipeDetail = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p className="text-xl text-gray-600">Loading recipe...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <p className="text-xl text-red-600 mb-4">Error: {error}</p>
+        <a href="/" className="text-purple-600 hover:text-purple-700">
+          Return to Home
+        </a>
       </div>
     );
   }
