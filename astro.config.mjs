@@ -1,5 +1,5 @@
 import { defineConfig } from 'astro/config';
-import vercel from '@astrojs/vercel';
+import vercel from '@astrojs/vercel/hybrid';
 import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 
@@ -8,14 +8,7 @@ export default defineConfig({
   adapter: vercel({
     webAnalytics: {
       enabled: true,
-    },
-    functionPerRoute: true,
-    routes: [
-      {
-        src: '/recipe/[id]',
-        dest: '/recipe/[id].astro'
-      }
-    ]
+    }
   }),
   integrations: [react(), tailwind()]
 });

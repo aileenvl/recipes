@@ -2,8 +2,8 @@
 import Layout from '../../layouts/Layout.astro';
 import { OramaClient } from '@oramacloud/client'
 
-// Don't set prerender to false, let hybrid mode handle it
-// export const prerender = false;
+// For hybrid mode, we need to explicitly mark this route as non-prerendered
+export const prerender = false;
 
 const { id } = Astro.params;
 const name = Astro.url.searchParams.get('name');
