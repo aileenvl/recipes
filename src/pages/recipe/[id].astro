@@ -2,37 +2,27 @@
 import Layout from '../../layouts/Layout.astro';
 import { OramaClient } from '@oramacloud/client'
 
-// Remove the getStaticPaths and just use prerender = false
+// Enable SSR for this dynamic route
 export const prerender = false;
 
+// Get both parameters
 const { id } = Astro.params;
 const name = Astro.url.searchParams.get('name');
 
-
-
-// Add dynamic route handling
-export function getStaticPaths() {
-  return [];
+// We need both parameters for Orama search
+if (!id || !name) {
+  return Astro.redirect('/', 302);
 }
 
 let recipe;
 let error = null;
-// Add response type handling
-const headers = new Headers();
-headers.set('Cache-Control', 's-maxage=1, stale-while-revalidate');
-
-if (!id || !name) {
-  return Astro.redirect('/', 302);
-}
 
 try {
   const endpoint = import.meta.env.PUBLIC_ORAMA_ENDPOINT?.trim();
   const apiKey = import.meta.env.PUBLIC_ORAMA_API_KEY?.trim();
   
   if (!endpoint || !apiKey) {
-    error = 'Missing Orama configuration';
-    throw new Error(error);
-
+    throw new Error('Missing Orama configuration');
   }
   
   const client = new OramaClient({
@@ -40,86 +30,67 @@ try {
     api_key: apiKey
   });
 
-  // Try both search approaches simultaneously
-  const [idResults, nameResults] = await Promise.all([
-    client.search({
-      term: id,
-      limit: 1,
-      where: { id }
-    }),
-    client.search({
-      term: name,
-      mode: 'fulltext',
-      limit: 10
-    })
-  ]);
+  // Search by name since that's what Orama needs
+  const searchResults = await client.search({
+    term: name,
+    mode: 'fulltext',
+    limit: 10
+  });
 
-  recipe = idResults.hits[0]?.document || 
-           nameResults.hits.find(hit => hit.document.id === id)?.document;
+  // Find the specific recipe by ID from the search results
+  recipe = searchResults.hits.find(hit => hit.document.id === id)?.document;
 
   if (!recipe) {
-    error = 'Recipe not found';
-    throw new Error(error);
+    throw new Error('Recipe not found');
   }
 
-} catch (error) {
-  console.error('Error fetching recipe:', error);
-  return new Response(null, {
-    status: 302,
-    headers: {
-      'Location': '/'
-    }
-  });
+} catch (err) {
+  console.error('Error fetching recipe:', err);
+  return Astro.redirect('/', 302);
 }
 ---
 
 <Layout title={recipe.name}>
   <main class="container mx-auto px-4 py-8">
-    {!recipe ? (
-      <div class="flex items-center justify-center min-h-screen">
-        <p class="text-xl text-gray-600">Loading recipe...</p>
+    <div class="max-w-3xl mx-auto mb-6">
+      <a href="/" class="inline-flex items-center text-purple-600 hover:text-purple-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+        </svg>
+        Back to Home
+      </a>
+    </div>
+
+    <article class="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-8">
+      <h1 class="text-4xl font-bold mb-4">{recipe.name}</h1>
+      <p class="text-gray-600 mb-6">{recipe.description}</p>
+
+      <div class="flex gap-4 mb-6">
+        <div class="bg-purple-100 px-4 py-2 rounded-md">
+          <span class="font-semibold">🕒 Cooking Time:</span> {recipe.timing.totalTime} minutes
+        </div>
+        <div class="bg-purple-100 px-4 py-2 rounded-md">
+          <span class="font-semibold">👥 Servings:</span> {recipe.servings}
+        </div>
       </div>
-    ) : (
-      <div class="max-w-3xl mx-auto mb-6">
-        <a href="/" class="inline-flex items-center text-purple-600 hover:text-purple-700">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
-          </svg>
-          Back to Home
-        </a>
+
+      <div class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Ingredients</h2>
+        <ul class="list-disc list-inside space-y-2">
+          {recipe.ingredients.parts.map((ingredient) => (
+            <li>{ingredient}</li>
+          ))}
+        </ul>
       </div>
 
-      <article class="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-8">
-        <h1 class="text-4xl font-bold mb-4">{recipe.name}</h1>
-        <p class="text-gray-600 mb-6">{recipe.description}</p>
-
-        <div class="flex gap-4 mb-6">
-          <div class="bg-purple-100 px-4 py-2 rounded-md">
-            <span class="font-semibold">🕒 Cooking Time:</span> {recipe.timing.totalTime} minutes
-          </div>
-          <div class="bg-purple-100 px-4 py-2 rounded-md">
-            <span class="font-semibold">👥 Servings:</span> {recipe.servings}
-          </div>
-        </div>
-
-        <div class="mb-8">
-          <h2 class="text-2xl font-semibold mb-4">Ingredients</h2>
-          <ul class="list-disc list-inside space-y-2">
-            {recipe.ingredients.parts.map((ingredient) => (
-              <li>{ingredient}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <h2 class="text-2xl font-semibold mb-4">Instructions</h2>
-          <ol class="list-decimal list-inside space-y-4">
-            {recipe.instructions.map((step) => (
-              <li class="pl-2">{step}</li>
-            ))}
-          </ol>
-        </div>
-      </article>
-    )}
+      <div>
+        <h2 class="text-2xl font-semibold mb-4">Instructions</h2>
+        <ol class="list-decimal list-inside space-y-4">
+          {recipe.instructions.map((step) => (
+            <li class="pl-2">{step}</li>
+          ))}
+        </ol>
+      </div>
+    </article>
   </main>
 </Layout>

@@ -11,9 +11,8 @@ export default defineConfig({
     },
     edge: false,
     functionPerRoute: true,
-    isr: {
-      enabled: true,
-      expiration: 60
+    arguments: {
+      handleDynamicRoutes: true,
     }
   }),
   integrations: [react(), tailwind()]
