@@ -1,6 +1,11 @@
 {
   "rewrites": [
-    { "source": "/recipe/:id", "destination": "/recipe/[id]" }
+    { "source": "/recipe/:path*", "destination": "/recipe/[id]" }
   ],
-  "cleanUrls": true
+  "routes": [
+    {
+      "src": "/recipe/(?<id>[^/]+)",
+      "dest": "/recipe/[id]?id=$id"
+    }
+  ]
 }

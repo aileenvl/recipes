@@ -4,15 +4,12 @@ import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 
 export default defineConfig({
-  output: 'hybrid',
+  output: 'server', // Change to server output
   adapter: vercel({
     webAnalytics: {
       enabled: true,
     },
-    isr: {
-      enabled: true,
-      expiration: 60,
-    }
+    isr: false // Disable ISR for now
   }),
   integrations: [react(), tailwind()]
 });

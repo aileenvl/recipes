@@ -2,16 +2,23 @@
 import Layout from '../../layouts/Layout.astro';
 import { OramaClient } from '@oramacloud/client'
 
-// Enable both static and dynamic rendering
+// Remove the getStaticPaths and just use prerender = false
 export const prerender = false;
+
+// Add error logging
+console.log("Route params:", Astro.params);
+console.log("URL:", Astro.url.toString());
+console.log("Search params:", Object.fromEntries(Astro.url.searchParams));
+
+const { id } = Astro.params;
+const name = Astro.url.searchParams.get('name');
+
+
 
 // Add dynamic route handling
 export function getStaticPaths() {
   return [];
 }
-
-const { id } = Astro.params;
-const name = Astro.url.searchParams.get('name');
 
 // Add response type handling
 const headers = new Headers();
