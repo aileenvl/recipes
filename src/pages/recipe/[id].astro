@@ -2,14 +2,13 @@
 import Layout from '../../layouts/Layout.astro';
 import { OramaClient } from '@oramacloud/client'
 
-// Enable SSR for this dynamic route
+// Mark this route as dynamic
 export const prerender = false;
 
-// Get both parameters
+// Get the route params
 const { id } = Astro.params;
 const name = Astro.url.searchParams.get('name');
 
-// We need both parameters for Orama search
 if (!id || !name) {
   return Astro.redirect('/', 302);
 }
@@ -30,14 +29,12 @@ try {
     api_key: apiKey
   });
 
-  // Search by name since that's what Orama needs
   const searchResults = await client.search({
     term: name,
     mode: 'fulltext',
     limit: 10
   });
 
-  // Find the specific recipe by ID from the search results
   recipe = searchResults.hits.find(hit => hit.document.id === id)?.document;
 
   if (!recipe) {
@@ -45,7 +42,12 @@ try {
   }
 
 } catch (err) {
-  console.error('Error fetching recipe:', err);
+  console.error('Error:', err);
+  return Astro.redirect('/', 302);
+}
+
+// Ensure we have a recipe before rendering
+if (!recipe) {
   return Astro.redirect('/', 302);
 }
 ---

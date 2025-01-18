@@ -8,11 +8,6 @@ export default defineConfig({
   adapter: vercel({
     webAnalytics: {
       enabled: true,
-    },
-    edge: false,
-    functionPerRoute: true,
-    arguments: {
-      handleDynamicRoutes: true,
     }
   }),
   integrations: [react(), tailwind()]
