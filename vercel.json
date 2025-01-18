@@ -1,14 +1,8 @@
 {
-  "cleanUrls": true,
   "rewrites": [
     { 
       "source": "/recipe/:id",
       "destination": "/recipe/[id]" 
-    }
-  ],
-  "routes": [
-    {
-      "handle": "filesystem"
     }
   ]
 }
