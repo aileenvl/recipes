@@ -2,13 +2,13 @@
 import Layout from '../../layouts/Layout.astro';
 import { OramaClient } from '@oramacloud/client'
 
-// Fix getStaticPaths to return the correct format
-export async function getStaticPaths() {
-  return [
-    // Return empty array but in the correct format
-    // This tells Astro to handle all dynamic paths
-  ];
-}
+// Explicitly mark this route as server-side
+export const prerender = false;
+
+// Remove getStaticPaths since we're using server-side rendering for this route
+// export async function getStaticPaths() {
+//   return [];
+// }
 
 const { id } = Astro.params;
 const name = Astro.url.searchParams.get('name');
@@ -31,7 +31,7 @@ try {
     api_key: apiKey
   });
 
-  // Simplified search to be more reliable
+  // First try exact ID match
   const searchResults = await client.search({
     term: id,
     limit: 1,
