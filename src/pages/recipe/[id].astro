@@ -5,11 +5,6 @@ import { OramaClient } from '@oramacloud/client'
 // Remove the getStaticPaths and just use prerender = false
 export const prerender = false;
 
-// Add error logging
-console.log("Route params:", Astro.params);
-console.log("URL:", Astro.url.toString());
-console.log("Search params:", Object.fromEntries(Astro.url.searchParams));
-
 const { id } = Astro.params;
 const name = Astro.url.searchParams.get('name');
 
@@ -20,26 +15,24 @@ export function getStaticPaths() {
   return [];
 }
 
+let recipe;
+let error = null;
 // Add response type handling
 const headers = new Headers();
 headers.set('Cache-Control', 's-maxage=1, stale-while-revalidate');
 
 if (!id || !name) {
-  return new Response(null, {
-    status: 302,
-    headers: {
-      'Location': '/'
-    }
-  });
+  return Astro.redirect('/', 302);
 }
 
-let recipe;
 try {
   const endpoint = import.meta.env.PUBLIC_ORAMA_ENDPOINT?.trim();
   const apiKey = import.meta.env.PUBLIC_ORAMA_API_KEY?.trim();
   
   if (!endpoint || !apiKey) {
-    throw new Error('Missing Orama configuration');
+    error = 'Missing Orama configuration';
+    throw new Error(error);
+
   }
   
   const client = new OramaClient({
@@ -65,12 +58,8 @@ try {
            nameResults.hits.find(hit => hit.document.id === id)?.document;
 
   if (!recipe) {
-    return new Response(null, {
-      status: 302,
-      headers: {
-        'Location': '/'
-      }
-    });
+    error = 'Recipe not found';
+    throw new Error(error);
   }
 
 } catch (error) {
