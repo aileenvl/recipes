@@ -1,14 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/recipe/:id",
+      "source": "/recipe/:path*",
       "destination": "/recipe"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/recipe/(.*)",
-      "dest": "/recipe"
     }
   ]
 }
