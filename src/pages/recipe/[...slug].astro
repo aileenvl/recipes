@@ -1,0 +1,25 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import RecipeDetail from '../../components/RecipeDetail';
+
+// Get ID from either the path or query parameters
+const pathId = Astro.params.slug;
+const queryId = Astro.url.searchParams.get('id');
+const id = queryId || pathId;
+const name = Astro.url.searchParams.get('name');
+
+console.log('Recipe page loaded', { pathId, queryId, id, name });
+
+// Add static paths for build
+export function getStaticPaths() {
+  return [
+    { params: { slug: undefined } },  // Handles /recipe?id=xxx
+    { params: { slug: '105541' } },   // Handles /recipe/105541
+    // Add more IDs as needed
+  ];
+}
+---
+
+<Layout title="Recipe">
+  <RecipeDetail client:only="react" />
+</Layout> 
