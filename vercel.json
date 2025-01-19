@@ -1,8 +1,16 @@
 {
   "rewrites": [
     {
-      "source": "/recipe/:path*",
-      "destination": "/recipe"
+      "source": "/recipe/:id",
+      "destination": "/recipe?id=:id"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Methods", "value": "GET,HEAD,PUT,PATCH,POST,DELETE" }
+      ]
     }
   ]
 }

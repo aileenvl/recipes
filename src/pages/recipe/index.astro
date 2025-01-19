@@ -2,10 +2,15 @@
 import Layout from '../../layouts/Layout.astro';
 import RecipeDetail from '../../components/RecipeDetail';
 
-const id = Astro.url.searchParams.get('id');
+// Try both formats
+const id = Astro.url.searchParams.get('id') || Astro.params.id;
 const name = Astro.url.searchParams.get('name');
 
 console.log('Recipe page loaded', { id, name });
+
+if (!id || !name) {
+  return Astro.redirect('/404');
+}
 ---
 
 <Layout title="Recipe">
