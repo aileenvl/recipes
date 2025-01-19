@@ -11,9 +11,9 @@ const RecipeDetail = () => {
       try {
         console.log('Starting recipe fetch...');
         
-        // Get parameters from query string only
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
+        // Get parameters from both path and query string
+        const pathParts = window.location.pathname.split('/');
+        const id = params.get('id') || pathParts[pathParts.length - 1];
         const name = params.get('name');
 
         console.log('Parsed parameters:', { 
